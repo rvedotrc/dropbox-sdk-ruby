@@ -310,14 +310,37 @@ class SDKTest < Test::Unit::TestCase
   def test_delta_latest_cursor
     prefix = @test_dir + "delta"
 
+    # First test with no path_prefix
+
     r = @client.delta_latest_cursor
     cursor = r['cursor']
     assert(cursor)
 
+    # Other changes (outside of these tests) might be going on, so we can't
+    # assert anything more about the deltas.
     r = @client.delta(cursor)
+
+    # Going deeper down the tree is OK
+    r = @client.delta(cursor, prefix)
     assert(r['entries'].empty?)
 
-    # Should also test path_prefix
+    # Now test with a path_prefix
+
+    r = @client.delta_latest_cursor(prefix)
+    cursor = r['cursor']
+    assert(cursor)
+
+    r = @client.delta(cursor, prefix)
+    assert(r['entries'].empty?)
+
+    # Going deeper down the tree is OK
+    r = @client.delta(cursor, prefix + "/subdir")
+    assert(r['entries'].empty?)
+
+    # Going up (outside of the scope of the cursor) is not OK
+    assert_raise DropboxError do
+      @client.delta(cursor, nil)
+    end
   end
 
   def test_longpoll_delta
