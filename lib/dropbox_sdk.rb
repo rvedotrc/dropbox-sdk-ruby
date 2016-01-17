@@ -1335,6 +1335,30 @@ class DropboxClient
     Dropbox::parse_response(response)
   end
 
+  # A way to quickly get a cursor for the server's state, for use with #delta.
+  # Unlike #delta, #delta_latest_cursor does not return any entries, so your app
+  # will not know about any existing files or folders in the Dropbox account. For
+  # example, if your app processes future delta entries and sees that a folder was
+  # deleted, your app won't know what files were in that folder. Use this endpoint
+  # if your app only needs to know about new files and modifications and doesn't
+  # need to know about files that already exist in Dropbox.
+
+  # Arguments:
+  # * +path_prefix+: If present, the returned cursor will be encoded with a
+  #   path_prefix for the specified path for use with #delta.
+  #
+  # Returns: A hash with one field.
+  # * +cursor+: A string that encodes the latest server state, as would be
+  #   returned by #delta when "has_more" is false.
+  def delta_latest_cursor(path_prefix=nil)
+    params = {
+      'path_prefix' => path_prefix
+    }
+
+    response = @session.do_post "/delta/latest_cursor", params
+    Dropbox::parse_response(response)
+  end
+
   # Calls the long-poll endpoint which waits for changes on an account. In
   # conjunction with #delta, this call gives you a low-latency way to monitor
   # an account for file changes.

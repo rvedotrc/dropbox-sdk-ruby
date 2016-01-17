@@ -307,6 +307,19 @@ class SDKTest < Test::Unit::TestCase
     assert_equal(expected, entries)
   end
 
+  def test_delta_latest_cursor
+    prefix = @test_dir + "delta"
+
+    r = @client.delta_latest_cursor
+    cursor = r['cursor']
+    assert(cursor)
+
+    r = @client.delta(cursor)
+    assert(r['entries'].empty?)
+
+    # Should also test path_prefix
+  end
+
   def test_longpoll_delta
     prefix = @test_dir + "delta"
 
